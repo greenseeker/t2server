@@ -1,0 +1,22 @@
+#!/usr/bin/env -S python3 -B
+from t2support import color
+
+print(f"\n{color.DC}The follow commands can be used to manage your Tribes 2 server:")
+
+print(f"""\n{color.BW}systemctl <action> t2server{color.DC}: The t2server service can be managed with the 
+standard Linux systemctl command.""")
+
+print(f"""\n{color.BW}t2fixer{color.DC}: This command resets the owner and permissions on all files associated
+with t2server. It's recommended to run this command any time you make changes
+or add files (such as mods or map packs) to your server to ensure they can be 
+properly read and accessed. In the future, this command may also resolve other 
+common issues.""")
+
+print(f"""\n{color.BW}t2remove{color.DC}: This command uninstalls t2server and removes most associated files. 
+Configuration and serverprefs files will be left alone.""")
+
+print(f"\n{color.DC}Tribes 2 is installed in {color.BW}/opt/t2server{color.DC}.")
+print(f"{color.DC}The {color.BW}/etc/t2server/config.yaml{color.DC} file holds basic service configuration values.")
+print(f"{color.DC}The {color.BW}/etc/t2server/serverprefs{color.DC} directory holds your T2 serverprefs .cs files.")
+
+print(color.X)

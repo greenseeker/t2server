@@ -1,0 +1,10 @@
+[Unit]
+Description=t2bouncer (restarts t2server at configured time)
+Wants=t2bouncer.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/t2bouncer
+
+[Install]
+WantedBy=multi-user.target
