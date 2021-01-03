@@ -1,0 +1,104 @@
+  _______        __  __                   _______  _______  ___ ___  _______ 
+ |_     _|.----.|__||  |--..-----..-----.|    |  ||    ___||   |   ||_     _|  
+   |   |  |   _||  ||  _  ||  -__||__ --||       ||    ___||-     -|  |   |  
+   |___|  |__|  |__||_____||_____||_____||__|____||_______||___|___|  |___|  
+                                                                            
+----------------------------- License Agreement --------------------------------
+
+YOU SHOULD CAREFULLY READ THE FOLLOWING LICENSE AGREEMENT BEFORE INSTALLING THIS
+SOFTWARE PROGRAM. BY INSTALLING OR OTHERWISE USING THE SOFTWARE PROGRAM, YOU 
+AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THE 
+TERMS OF THIS AGREEMENT, PROMPTLY DELETE THE UNUSED SOFTWARE PROGRAM.
+
+Definitions:
+	1. "This software program" is defined as the integrated, machine readable, 
+	executable code, and application tools included as part of the TribesNext 
+	match making service.
+	2. "Associated intepreted script code" is defined as the human readable, 
+	executable code, and all intermediate representations included as part of or 
+	generated during utilization of the TribesNext match making service.
+
+This software program (the “Program”), associated interpreted script code, any 
+on-line or electronic documentation, and any and all copies and derivative works
+of such software program are the copyrighted work of the TribesNext team, All 
+rights reserved, except as expressly stated herein.  All use of the Program is 
+governed by the terms of this License Agreement provided below. The Program is 
+solely for use by end users according to the terms of the License Agreement. Any
+use, reproduction or redistribution of the Program not in accordance with the 
+terms of the License Agreement is expressly prohibited.
+
+	1. Ownership. All title, ownership rights and intellectual property rights in
+	and to the Program and any and all copies thereof (including but not limited 
+	to any titles, computer code, objects, concepts, artwork, methods of 
+	operation, moral rights, any related documentation, and “applets” 
+	incorporated into the Program) are owned by the TribesNext team or its 
+	licensors. The Program is protected by the copyright laws of the United 
+	States, international copyright treaties and conventions and other laws. All 
+	rights are reserved. The Program contains certain licensed materials and 
+	TribesNext's licensors may protect their rights in the event of any violation
+	of this Agreement.
+	2. Termination. This License Agreement is effective until terminated. You may
+	terminate the License Agreement at any time by destroying the Program. 
+	TribesNext may, at its discretion, terminate this License Agreement in the 
+	event that you fail to comply with the terms and conditions contained herein.
+	In such event, you must immediately destroy the Program. 
+	3. Export Controls. The Program contains strong cryptography, thus the 
+	Program may not be re-exported, downloaded or otherwise exported into (or to 
+	a national or resident of) any country to which the U.S. has embargoed goods,
+	or to anyone on the U.S. Treasury Department’s list of Specially Designated 
+	Nationals or the U.S. Commerce Department’s Table of Denial Orders. By 
+	installing the Program, you are agreeing to the foregoing and you are 
+	representing and warranting that you are not located in, under the control 
+	of, or a national or resident of any such country or on any such list.
+	4. Limited Warranty. TribesNext expressly disclaims any warranty for the 
+	Program, components and any assorted documentation. The Program, components 
+	and any assorted documentation are provided "as is" without warranty of any 
+	kind, either express or implied, including, without limitation, the implied 
+	warranties of merchantability, fitness for a particular purpose, or 
+	noninfringement. The entire risk arising out of use or performance of the 
+	Program, components and any assorted documentation remains with the User. 
+	Some states do not allow the exclusion or limitation of implied warranties or
+	liability for incidental damages, so the above limitations may not apply to 
+	you.
+	5. Limitation of Liability. NEITHER TRIBESNEXT, SUBSIDIARIES OR AFFILIATES 
+	SHALL BE LIABLE IN ANY WAY FOR LOSS OR DAMAGE OF ANY KIND RESULTING FROM THE 
+	USE OF THE PROGRAM OR USE OF ASSOCIATED ONLINE SERVICES INCLUDING, BUT NOT 
+	LIMITED TO, LOSS OF GOODWILL, WORK STOPPAGE, COMPUTER FAILURE OR MALFUNCTION,
+	OR ANY AND ALL OTHER COMMERCIAL DAMAGES OR LOSSES. TRIBESNEXT FURTHER 
+	DISCLAIMS ALL WARRANTIES WITH REGARD TO YEAR 2000 COMPLIANCE OF THE SOFTWARE.
+	SPECIFICALLY, TRIBESNEXT MAKES NO WARRANTIES THAT THE PERFORMANCE OR 
+	FUNCTIONALITY OF THE PROGRAM WILL NOT BE AFFECTED BY DATES PRIOR TO, DURING 
+	OR AFTER THE YEAR 2000, OR THAT THE PROGRAM WILL BE CAPABLE OF CORRECTLY 
+	PROCESSING, PROVIDING, AND/OR RECEIVING DATE INFORMATION WITHIN AND BETWEEN 
+	CENTURIES, INCLUDING THE PROPER EXCHANGE OF DATE INFORMATION BETWEEN PRODUCTS
+	OR APPLICATIONS. ANY WARRANTY AGAINST INFRINGEMENT THAT MAY BE PROVIDED IN 
+	SECTION 2-312(3) OF THE UNIFORM COMMERCIAL CODE AND/OR IN ANY OTHER 
+	COMPARABLE STATE STATUTE IS EXPRESSLY DISCLAIMED. FURTHER, TRIBESNEXT SHALL 
+	NOT BE LIABLE IN ANY WAY FOR THE LOSS OR DAMAGE TO PLAYER CHARACTERS, 
+	ACCOUNTS, STATISTICS OR USER PROFILE INFORMATION STORED ON TribesNext.com. I 
+	UNDERSTAND AND ACKNOWLEDGE THAT TRIBESNEXT. CANNOT AND WILL NOT BE 
+	RESPONSIBLE FOR ANY INTURUPTIONS OF SERVICE ON TRIBESNEXT.COM INCLUDING, BUT 
+	NOT LIMITED TO ISP DISRUPTIONS, SOFTWARE OR HARDWARE FAILURES OR ANY OTHER 
+	EVENT WHICH MAY RESULT IN A LOSS OF DATA OR DISRUPTION OF SERVICE. Some 
+	states do not allow the exclusion or limitation of incidental or 
+	consequential damages, or allow limitations on how long an implied warranty 
+	lasts, so the above limitations may not apply.
+	6. Equitable Remedies. You hereby agree that TribesNext would be irreparably 
+	damaged if the terms of this License Agreement were not specifically 
+	enforced, and therefore you agree that TribesNext shall be entitled, without 
+	bond, other security, or proof of damages, to appropriate equitable remedies 
+	with respect to breaches of this License Agreement, in addition to such other
+	remedies as TribesNext may otherwise have available to it under applicable 
+	laws. In the event any litigation is brought by either party in connection 
+	with this License Agreement, the prevailing party in such litigation shall be
+	entitled to recover from the other party all the costs, attorneys’ fees and 
+	other expenses incurred by such prevailing party in the litigation.
+
+I hereby acknowledge that I have read and understand the foregoing License 
+Agreement and agree that the action of installing the Program is an 
+acknowledgment of my agreement to be bound by the terms and conditions of the 
+License Agreement contained herein. I also acknowledge and agree that this 
+License Agreement is the complete and exclusive statement of the agreement 
+between TribesNext and I and that the License Agreement supersedes any prior or 
+contemporaneous agreement, either oral or written, and any other communications 
+between TribesNext and myself

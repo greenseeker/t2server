@@ -1,0 +1,304 @@
+#!/usr/bin/env -S python3 -B
+from os import system, unlink, symlink, makedirs, geteuid, getcwd, chmod, rename
+from os.path import isfile, isdir
+from time import time
+from shutil import copyfile, rmtree
+from glob import iglob
+from pwd import getpwnam as getuser
+from t2support import *
+
+if geteuid() != 0:
+    bail(f"This script must be run with sudo or as root.\n")
+
+pwd = getcwd()
+
+installer_mirror_list = [
+    "https://www.the-construct.net/downloads/tribes2/tribes2gsi.exe",
+    "http://spinfusor.ch/tribes2/setup/tribes2_gsi.exe",
+    "https://adamantis.keybase.pub/Abandonware/Tribes2/tribes2gsi.exe?dl=1",
+    "http://xfer1.the-construct.net/tribes2/tribes2gsi.exe",
+    "http://dl.rawr32.net/tribes2gsi.exe",
+    "https://files.playt2.com/Install/tribes2gsi.exe",
+    "https://gamestand.net/dl/tribes-2/?ind=1527034109041&filename=tribes2_gsi.exe&wpdmdl=165&refresh=5fb884009d78b1605927936",
+    "http://www.tribes2stats.com/files/tribes2_gsi.exe"
+]
+
+tnpatch_mirror_list = [
+    "http://www.tribesnext.com/files/TribesNext_rc2a.exe",
+    "https://keybase.pub/adamantis/Abandonware/Tribes2/TribesNext_rc2a.exe",
+    "https://files.playt2.com/Install/TribesNext_rc2a.exe",
+    "https://gamestand.net/dl/tribes-2/?ind=1527034087554&filename=TribesNext_rc2a.exe&wpdmdl=165&refresh=5fb884009d73d1605927936",
+    "http://www.tribes2stats.com/files/patches/TribesNext_rc2a.exe",
+    "http://files.nastyhobbit.org/t2-installer/TribesNext_rc2a.exe",
+    "http://www.the-flet.com/dynamix/t2/TribesNext_rc2a.exe",
+    "http://cdn.net-load.com/TribesNext_rc2a.exe",
+    "https://starsiege.pw/_tribes2/TribesNext_rc2a.exe"
+]
+
+installer_checksum = "93460541ddd3bdff9b30829ba04f2186"
+tnpatch_checksum = "3bec757215cd29b37d85b567edf8d693"
+
+def md5sum(filename):
+    """ Return the md5 checksum of the given file """
+    with open(filename, "rb") as file:
+        file_hash = md5()
+        chunk = file.read(8192)
+        while chunk:
+            file_hash.update(chunk)
+            chunk = file.read(8192)
+    return file_hash.hexdigest()
+
+def download_file(url, filename):
+    """ Download url with progress meter and save to filename """
+    req = get(url, stream=True)
+    with open(filename, 'wb') as outfile:
+        pbar = tqdm(total=int(req.headers['Content-Length']), unit="B", unit_scale=True, unit_divisor=1024, position=0, desc=filename.split("/")[-1])
+        for chunk in req.iter_content(chunk_size=1024*1024): 
+            if chunk: 
+                pbar.update(len(chunk))
+                outfile.write(chunk)
+    pbar.close()
+    return filename
+
+if __name__ == "__main__":
+
+    action=menu(["~~[C]ontinue","[Q]uit"],header="This script will install Tribes 2 for use as a dedicated server.")
+    if action == "Q": bail()
+
+    # Check if user exists
+    try:
+        user_info = getuser(user)
+    except KeyError:
+        user_info = False
+
+    # Create or repurpose user
+    if user_info:
+        if user_info.pw_dir == install_dir: 
+            pwarn(f"User '{user}' exists and will be reused.")
+        else:
+            bail(f"ERROR: User '{user}' already exists and may belong to another person or process.")
+    else:
+        pinfo(f"Creating {user} user and {install_dir}.")
+        system(f"useradd -md {install_dir} {user}")
+
+    if not user_info: user_info = getuser(user)
+
+    # Create log_dir
+    pinfo(f"Creating {log_dir}.")
+    makedirs(log_dir, mode=0o777, exist_ok=True)
+    chmod(log_dir, 0o777)
+
+    # Create .wine dir
+    pinfo(f"Creating {install_dir}/.wine defaults.")
+    system(f"su - {user} -c'wineboot -i > /dev/null 2>&1'")
+
+    # Map wine I: drive to pwd T: drive to install_dir and L: to log_dir
+    pinfo(f"Mapping I: in wine for {user}.")
+    try:
+        symlink(f"{pwd}/winbin", f"{install_dir}/.wine/dosdevices/i:")
+    except FileExistsError:
+        pass
+
+    pinfo(f"Mapping L: in wine for {user}.")
+    try:
+        symlink(log_dir, f"{install_dir}/.wine/dosdevices/l:")
+    except FileExistsError:
+        pass
+    
+    pinfo(f"Mapping T: in wine for {user}.")
+    try:
+        symlink(install_parent, f"{install_dir}/.wine/dosdevices/t:")
+    except FileExistsError:
+        pass
+
+
+    # Check for needed exe/zip/dll files in winbin dir
+    needed_files=[]
+    if isfile(f"{pwd}/winbin/tribes2gsi.exe"):
+        pinfo("tribes2gsi.exe found.")
+        installer_exe = f"{pwd}/winbin/tribes2gsi.exe"
+    elif isfile(f"{pwd}/winbin/tribes2_gsi.exe"):
+        pinfo("tribes2_gsi.exe found.")
+        installer_exe = f"{pwd}/winbin/tribes2_gsi.exe"
+    else:
+        pwarn("Tribes 2 installer not found.")
+        needed_files.append("tribes2_gsi.exe")
+        installer_exe = False
+
+    if isfile(f"{pwd}/winbin/TribesNext_rc2a.exe"):
+        pinfo("TribesNext_rc2a.exe found.")
+        tnpatch_exe = f"{pwd}/winbin/TribesNext_rc2a.exe"
+    else:
+        pwarn("Tribes Next patch not found.")
+        needed_files.append("TribesNext_rc2a.exe")
+        tnpatch_exe = False
+
+    ruby_dll = f"{pwd}/winbin/msvcrt-ruby191.dll"
+    instwrap_exe = f"{pwd}/winbin/install_wrapper.exe"
+
+    # Download files if needed
+    if not installer_exe or not tnpatch_exe:
+        action=menu(["~~[D]ownload automatically","[Q]uit"],header="One or more needed files were not found. Download automatically or quit so they can be manually placed in the 'winbin' subdirectory?")
+        if needed_files == 2:
+            needed_files=f"{needed_files[0]} and {needed_files[1]}"
+        if action=="Q": bail(f"Manually place {needed_files} in the 'winbin' subdirectory then rerun setup.")
+
+    if not installer_exe: 
+        for url in installer_mirror_list:
+            try: 
+                pinfo(f"\nDownloading from {url.split('/')[2]}...")
+                installer_exe = download_file(url, f"{pwd}/winbin/tribes2_gsi.exe")
+                if md5sum(installer_exe) == installer_checksum: 
+                    pinfo("Checksum validation passed.")
+                    break
+                else:
+                    perror("Checksum validation failed. Trying next mirror.")
+            except KeyError:
+                perror("Download error. Trying next mirror.")
+                continue
+
+    if not installer_exe:
+        bail("ERROR: Tribes 2 installer could not be downloaded.")
+
+    if not tnpatch_exe: 
+        for url in tnpatch_mirror_list:
+            try: 
+                pinfo(f"\nDownloading from {url.split('/')[2]}...")
+                tnpatch_exe = download_file(url, f"{pwd}/winbin/TribesNext_rc2a.exe")
+                if md5sum(tnpatch_exe) == tnpatch_checksum: 
+                    pinfo("Checksum validation passed.")
+                    break
+                else:
+                    perror("Checksum validation failed. Trying next mirror." )
+            except KeyError:
+                perror("Download error. Trying next mirror.")
+                continue
+
+    if not tnpatch_exe: 
+        bail("ERROR: Tribes Next patch could not be downloaded.")
+
+    # Present SLAs before beginning install
+    sla = None
+    while not sla:
+        sla=menu(["[V]iew Tribes 2 and TribesNext License Agreements", "[A]ccept License Agreements", "[Q]uit"], header="Please take a moment to review and accept the Tribes 2 and TribeNext License Agreements before beginning automated install.")
+        if sla == "V":
+            print(color.DY)
+            system(f"/usr/bin/less {pwd}/sla/tribes2.txt")
+            print(color.DP)
+            system(f"/usr/bin/less {pwd}/sla/tribesnext.txt")
+            sla = None
+        elif sla == "A":
+            break
+        elif sla == "Q":
+            bail("You must accept the License Agreements to install.")
+
+    # Ensure sufficient permissions on winbin and its contents
+    chmod(f"{pwd}/winbin", 0o777)
+    chmod(installer_exe, 0o777)
+    chmod(tnpatch_exe, 0o777)
+    chmod(instwrap_exe, 0o777)
+    chmod(ruby_dll, 0o777)
+
+    # Execute install wrapper
+    pinfo(f"\nInstalling Tribes 2 and the TribesNext patch in wine. Please wait...")
+    chowner(install_dir, user)
+    system(f"su - {user} -c'xvfb-run -as " + '"-fbdir /var/tmp"' + " wine I:/install_wrapper.exe > /dev/null 2>&1'")
+
+    # Rudamentary check to see if T2 install succeeded
+    if not isfile(f"{install_dir}/Tribes 2 Solo & LAN.lnk"): bail(f"ERROR: Tribes 2 installation appears to have failed. Check {log_dir}/install_wrapper.log")
+    
+    # Rudamentary check to see if TN install succeeded
+    if not isfile(f"{install_dir}/GameData/TN_Uninstall.exe"): bail(f"ERROR: Tribes Next installation appears to have failed. Check {log_dir}/install_wrapper.log")
+
+    # Replace msvcrt-ruby190.dll with msvcrt-ruby191.dll
+    pinfo("Updating msvcrt-ruby190.dll to msvcrt-ruby191.dll.\n")
+    copyfile(ruby_dll,f"{install_dir}/GameData/msvcrt-ruby191.dll")
+    unlink(f"{install_dir}/GameData/msvcrt-ruby190.dll")
+    symlink(f"{install_dir}/GameData/msvcrt-ruby191.dll", f"{install_dir}/GameData/msvcrt-ruby190.dll")
+
+    # Install addons
+    for addon in iglob(f"{pwd}/addons/*"):
+        if addon.endswith(".zip"):
+            pinfo(f"Unpacking {addon} into {install_dir}/GameData.")
+            system(f"unzip -qqd {install_dir}/GameData {addon}")
+        elif addon.endswith((".tar",".tgz",".tar.gz",".txz",".tar.xz",".tbz",".tar.bz")):
+            pinfo(f"Unpacking {addon} into {install_dir}/GameData.")
+            system(f"tar -C {install_dir}/GameData -xf {addon}")
+        elif addon.endswith(".vl2"):
+            pinfo(f"Copying {addon} to {install_dir}/GameData/base.")
+            copyfile(addon,f"{install_dir}/GameData/base/{addon.split('/')[-1]}")
+        elif addon.endswith("readme.txt"):
+            pass
+        else:
+            pwarn(f"Ignoring {addon}.")
+
+    # Copy t2server and t2bouncer to /usr/local/bin/
+    pinfo("Installing t2server script.")
+    copyfile(f"{pwd}/usr/local/bin/t2server",f"{bin_dir}/t2server")
+    pinfo("Installing t2bouncer script.")
+    copyfile(f"{pwd}/usr/local/bin/t2bouncer",f"{bin_dir}/t2bouncer")
+
+    # Set owner/group on install_dir
+    chowner(install_dir, user)
+
+    # Clean up temp dir and some unneeded files
+    pinfo("A little housekeeping...")
+    if isfile(f"{install_dir}/Tribes 2 Online.lnk"): unlink(f"{install_dir}/Tribes 2 Online.lnk")
+    if isfile(f"{install_dir}/Tribes 2 Solo & LAN.lnk"): unlink(f"{install_dir}/Tribes 2 Solo & LAN.lnk")
+    if isfile(f"{install_dir}/UNWISE.EXE"): unlink(f"{install_dir}/UNWISE.EXE")
+    if isfile(f"{install_dir}/Readme.txt"): unlink(f"{install_dir}/Readme.txt")
+    if isfile(f"{install_dir}/GameData/Classic_LAN.bat"): unlink(f"{install_dir}/GameData/Classic_LAN.bat")
+    if isfile(f"{install_dir}/GameData/Classic_dedicated_server.bat"): unlink(f"{install_dir}/GameData/Classic_dedicated_server.bat")
+    if isfile(f"{install_dir}/GameData/Classic_online.bat"): unlink(f"{install_dir}/GameData/Classic_online.bat")
+    if isfile(f"{install_dir}/GameData/base/EULA.txt"): unlink(f"{install_dir}/GameData/base/EULA.txt")
+    if isfile(f"{install_dir}/GameData/base/UKEULA.txt"): unlink(f"{install_dir}/GameData/base/UKEULA.txt")
+    if isdir(f"{install_dir}/Manual"): rmtree(f"{install_dir}/Manual")
+    if isdir(f"{install_dir}/.wine/drive_c/users/t2server/Temp"): rmtree(f"{install_dir}/.wine/drive_c/users/t2server/Temp")
+    if isfile(f"{install_dir}/t2csri_eula.txt"): unlink(f"{install_dir}/t2csri_eula.txt")
+    if isfile(f"{install_dir}/Inside\ Team\ Rabbit\ 2.txt"): unlink(f"{install_dir}/Inside\ Team\ Rabbit\ 2.txt")
+    if isfile(f"{install_dir}/UpdatePatch.txt"): unlink(f"{install_dir}/UpdatePatch.txt")
+    if isfile(f"{install_dir}/Classic/Classic_readme.txt"): unlink(f"{install_dir}/Classic/Classic_readme.txt")
+    if isfile(f"{install_dir}/Classic_technical.txt"): unlink(f"{install_dir}/Classic_technical.txt")
+
+    # Create config directory and files
+    pinfo(f"\nCreating {etc_dir}, default config, and installing prefs files.")
+    makedirs(f"{etc_dir}/serverprefs", mode=0o775, exist_ok=True)
+    if isfile(f"{etc_dir}/config.yaml"):
+        timestamp = int(time())
+        rename(f"{etc_dir}/config.yaml",f"{etc_dir}/config.yaml.{timestamp}")
+        pwarn(f"Existing {etc_dir}/config.yaml renamed to {etc_dir}/config.yaml.{timestamp}. Be sure to compare with and update the new config.yaml file.")
+    pinfo(f"Writing default {etc_dir}/config.yaml.")
+    copyfile(f"{pwd}/etc/t2server/config.yaml", f"{etc_dir}/config.yaml")
+    for pfile in iglob(f"{pwd}/etc/t2server/serverprefs/*"):
+        pinfo(f"Copying {pfile} to {etc_dir}/serverprefs.")
+        copyfile(pfile,f"{etc_dir}/serverprefs/{pfile.split('/')[-1]}")
+    
+    # Create systemd units
+    pinfo("\nCreating systemd units:")
+    pinfo("- t2server service")
+    copyfile(f"{pwd}/etc/systemd/system/t2server.service",f"{unit_dir}/t2server.service")
+    pinfo("- t2bouncer service")
+    copyfile(f"{pwd}/etc/systemd/system/t2bouncer.service",f"{unit_dir}/t2bouncer.service")
+    pinfo("- t2bouncer timer")
+    copyfile(f"{pwd}/etc/systemd/system/t2bouncer.timer",f"{unit_dir}/t2bouncer.timer")
+    system("systemctl daemon-reload")
+
+    # Install utility scripts
+    pinfo("\nInstalling utilities:")
+    pinfo("- t2bouncer")
+    copyfile(f"{pwd}/usr/local/bin/t2fixer",f"{bin_dir}/t2fixer")
+    pinfo("- t2remove")
+    copyfile(f"{pwd}/usr/local/bin/t2remove",f"{bin_dir}/t2remove")
+    pinfo("- t2help")
+    copyfile(f"{pwd}/usr/local/bin/t2help",f"{bin_dir}/t2help")
+
+    # Install python module
+    copyfile(f"{pwd}/usr/local/bin/t2support.py",f"{bin_dir}/t2support.py")
+    chmod(f"{bin_dir}/t2fixer",0o777)
+    system(f"{bin_dir}/t2fixer")
+    
+    # Show help
+    system(f"{bin_dir}/t2help")
+    menu(['~~[E]xit'],header="You can run 't2help' at any time to view the info above again.")
+
+    print(f"{color.X}\n")

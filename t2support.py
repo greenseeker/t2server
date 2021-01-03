@@ -1,0 +1,1 @@
+usr/local/bin/t2support.py

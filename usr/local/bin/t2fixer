@@ -1,0 +1,103 @@
+#!/usr/bin/env -S python3 -B
+from os import geteuid, chmod, walk
+from os.path import isdir, islink, join
+from shutil import chown
+from sys import exit as bail
+from t2support import *
+
+if geteuid() != 0:
+    bail("This script must be run with sudo or as root.\n")
+
+def setperm(file):
+    if islink(file):
+        pass
+    elif isdir(file):
+        log.write(f"Setting mode 775 on directory {file}")
+        try:
+            chmod(file,0o775)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+    elif file.endswith("t2support.py"):
+        log.write(f"Setting mode 664 on file      {file}")
+        try:
+            chmod(file,0o664)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+    elif file.startswith(bin_dir):
+        log.write(f"Setting mode 775 on script    {file}")
+        try:
+            chmod(file,0o775)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+    elif file.endswith(".exe"):
+        log.write(f"Setting mode 775 on exe       {file}")
+        try:
+            chmod(file,0o775)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+    else:
+        log.write(f"Setting mode 664 on file      {file}")
+        try:
+            chmod(file,0o664)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+    
+    if islink(file):
+        pass
+    else:
+        try:
+            log.write(f"Setting owner/group on        {file}")
+            chown(file, "t2server", "t2server")
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set owner/group on {file}")
+            log.write(f"... FAILED!\n")
+            pass
+
+
+with open(f'{log_dir}/t2fixer.log', 'w') as log:
+    setperm(install_dir)
+    setperm(etc_dir)
+
+    for r, d, f in walk(f"{install_dir}/GameData"):
+        for file in d:
+            setperm(join(r, file))
+        for file in f:
+            setperm(join(r, file))
+
+    for r, d, f in walk(etc_dir):
+        for file in d:
+            setperm(join(r, file))
+        for file in f:
+            setperm(join(r, file))
+
+    for r, d, f in walk(log_dir):
+        for file in d:
+            setperm(join(r, file))
+        for file in f:
+            setperm(join(r, file))
+
+    setperm(f"{unit_dir}/t2server.service")
+    setperm(f"{unit_dir}/t2bouncer.service")
+    setperm(f"{unit_dir}/t2bouncer.timer")
+    setperm(f"{bin_dir}/t2server")
+    setperm(f"{bin_dir}/t2bouncer")
+    setperm(f"{bin_dir}/t2remove")
+    setperm(f"{bin_dir}/t2fixer")
+    setperm(f"{bin_dir}/t2help")
+    setperm(f"{bin_dir}/t2support.py")

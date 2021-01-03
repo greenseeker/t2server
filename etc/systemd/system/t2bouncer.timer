@@ -1,0 +1,10 @@
+[Unit]
+Description=t2bouncer timer
+BindsTo=t2server.service
+
+[Timer]
+Unit=t2bouncer.service
+OnCalendar=*:00:00
+
+[Install]
+WantedBy=timers.target

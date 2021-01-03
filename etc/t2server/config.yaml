@@ -1,0 +1,44 @@
+---
+## ServerPrefs indicates the server config file in /etc/t2server/serverprefs
+## to use. This is case-sensitive and must match the filename exactly.
+ServerPrefs: Classic_CTF.cs
+
+## Tribes 2 servers tend to get unstable after a couple weeks of being online.
+## Here you can specify a day and hour to automatically bounce the server.
+## Set RestartTime to the hour of the day, 0-23, to cycle the server 
+## (eg. 4=4:00am, 16=4:00pm) or False to disable. Set RestartDay to the 
+## three-letter abbreviation of the day on which the server should be restarted
+## (Sun, Mon, Tue, Wed, Thu, Fri, or Sat). This will be ignored if 
+## RestartTime = False.
+RestartTime: False
+RestartDay: Mon
+
+## Set Mod to the directory name of the mod to be loaded, or 'base' for
+## vanilla (but why?). This is case-sensitive and must match the subdirectory
+## name exactly.
+Mod: Classic
+
+## Set Public to False to host a LAN-only game, or to True to host a public
+## game which will be registered with the TribesNext master.
+Public: False
+
+## Tribes 2 servers try to detect descrepencies between their own IP and the IP
+## that the client believes it's connecting to as possible man-in-the-middle
+## attacks, however this often interfers with connections when the server is
+## NATed or multi-homed. Enable OverrideMITM to effectively disable this
+## detection. This setting has no effect if Public = False.
+OverrideMITM: True
+
+## Configure a custom map rotation list. The standard Mission Types are
+## "Bounty", "CnH" (Capture and Hold), "CTF" (Capture the Flag), "DM" 
+## (Deathmatch), "DnD" (Defend and Destroy), "Hunters", "Rabbit", "Siege", 
+## "TeamHunters", and "TeamRabbit". Your server will always launch with the 
+## MissionType and Map specified in your serverprefs file ($Host::MissionType 
+## and $Host::Map), so make sure MissionType matches $Host::MissionType and 
+## the first map in MapList matches $Host::Map. If you're running a mod that 
+## handles map rotation, set these to 'False'.
+## Example: 
+## MissionType: CTF
+## MapList: ["Katabatic", "Minotaur", "Tombstone"]
+MissionType: False
+MapList: False

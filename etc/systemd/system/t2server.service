@@ -1,0 +1,36 @@
+[Unit]
+Description=Tribes 2 Dedicated Server
+Requires=network.target
+After=network.target
+Wants=t2bouncer.timer
+Before=t2bouncer.timer
+
+[Service]
+Type=simple
+Environment=TERM=xterm-256color
+Environment=PYTHONUNBUFFERED=1
+User=t2server
+CPUAffinity=0
+ExecStart=/usr/local/bin/t2server 
+ExecStop=/usr/bin/wineserver -k
+Restart=on-failure
+RestartSec=15s
+TimeoutStopSec=60s
+WorkingDirectory=/opt/t2server/GameData
+LogsDirectory=t2server
+
+# Below settings help lock down the service for security
+ProtectSystem=full
+ProtectHome=true
+SystemCallFilter=@system-service
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

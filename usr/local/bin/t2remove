@@ -1,0 +1,64 @@
+#!/usr/bin/env -S python3 -B
+from os import system, unlink, geteuid
+from sys import argv
+from t2support import *
+
+if geteuid() != 0:
+    bail(f"This script must be run with sudo or as root.\n")
+
+if menu(["[Y]es, remove Tribes 2", "~~[N]o, exit t2remove"],header=f"This script will remove Tribes 2, service files, and utilities. {etc_dir} will be left as it is.") == "N": bail()
+
+system("/usr/bin/systemctl stop t2server.service")
+system("/usr/sbin/userdel -fr t2server > /dev/null 2>&1")
+system("/usr/sbin/groupdel t2server > /dev/null 2>&1")
+
+systemd_delete_failed=0
+
+try:
+    unlink(f"{unit_dir}/t2bouncer.service")
+except:
+    pwarn(f"Failed to delete {unit_dir}/t2bouncer.service")
+    systemd_delete_failed+=1
+
+try:
+    unlink(f"{unit_dir}/t2bouncer.timer")
+except:
+    pwarn(f"Failed to delete {unit_dir}/t2bouncer.timer")
+    systemd_delete_failed+=1
+
+try:
+    unlink(f"{unit_dir}/t2server.service")
+except:
+    pwarn(f"Failed to delete {unit_dir}/t2server.service")
+    systemd_delete_failed+=1
+
+
+if systemd_delete_failed > 0:
+    pinfo("After manually removing the files above, run 'systemctl daemon-reload' to refresh systemd.")
+else:
+    system("/usr/bin/systemctl daemon-reload")
+
+try:
+    unlink(f"{bin_dir}/t2bouncer")
+except:
+    pwarn(f"Failed to delete {bin_dir}/t2bouncer")
+
+try:
+    unlink(f"{bin_dir}/t2fixer")
+except:
+    pwarn(f"Failed to delete {bin_dir}/t2fixer")    
+
+try:
+    unlink(f"{bin_dir}/t2server")
+except:
+    pwarn(f"Failed to delete {bin_dir}/t2server")
+
+try:
+    unlink(f"{bin_dir}/t2support.py")
+except:
+    pwarn(f"Failed to delete {bin_dir}/t2support.py")
+
+try:
+    if argv[0].startswith(bin_dir): unlink(argv[0])
+except:
+    pwarn(f"Failed to delete {argv[0]}")

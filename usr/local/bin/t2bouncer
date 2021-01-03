@@ -1,0 +1,31 @@
+#!/usr/bin/env -S python3 -B
+import yaml
+from datetime import datetime
+from os import system
+from t2support import *
+
+# Set default configuration
+config_defaults = {
+    'RestartTime' : False,
+    'RestartDay'  : 'Mon',
+}
+
+# Read configuration from config.yaml
+with open(f'{etc_dir}/config.yaml', 'r') as f:
+    loaded_config = yaml.full_load(f)
+
+# Merge config_defaults and loaded_config, with loaded_config taking precedence where there are conflicts.
+# This ensures there are no undefined values in the case of a user removing one from config.yaml.
+config = {**config_defaults, **loaded_config}
+
+now=datetime.now()
+
+if not config['RestartTime']:
+    print("RestartTime is disabled.")
+
+elif config['RestartTime'] > 0 and config['RestartTime'] < 25:
+    if config['RestartTime'] == int(now.strftime('%H')) and config['RestartDay'][:3].upper() == now.strftime('%a').upper():
+        print("RestartTime and RestartDay match current time and day. Restarting t2server.service.")
+        system("/usr/bin/systemctl try-restart t2server.service")
+    else:
+        print("RestartTime and RestartDay do not match current time and day.")
