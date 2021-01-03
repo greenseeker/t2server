@@ -73,10 +73,10 @@ def server_files(config):
             for mission in config["MapList"]:
                 mlist.write(f"{config['MissionType']} {mission}\n")
     else:
-        if isfile(f"{install_dir}/GameData/base/prefs/missions.txt"): 
-            print(f"Purging {install_dir}/GameData/base/prefs/missions.txt")
-            # missions.txt needs to exist or the missioncycle.cs script will hang, so overwrite with an empty file
-            open(f"{install_dir}/GameData/base/prefs/missions.txt", 'w').close()
+        # missions.txt needs to exist or the missioncycle.cs script will hang, so create/overwrite with an empty file
+        print(f"Purging {install_dir}/GameData/base/prefs/missions.txt")
+        with open(f"{install_dir}/GameData/base/prefs/missions.txt", 'w') as mlist:
+            mlist.write("")
     
 
 def runaway_control():
@@ -154,7 +154,6 @@ if __name__ == "__main__":
     # Merge config_defaults and loaded_config, with loaded_config taking precedence where there are conflicts.
     # This ensures there are no undefined values in the case of a user removing one from config.yaml.
     config = {**config_defaults, **loaded_config}
-    print(config)
 
     # Validate the mod directory and serverprefs file
     if not isdir(f"{install_dir}/GameData/{config['Mod']}"): 

@@ -1,0 +1,13 @@
+Required OS packages for Ubuntu: 
+# dpkg --add-architecture i386 
+# apt update
+# apt install unzip xvfb python3-pip wine32 cpulimit
+# pip3 install tqdm
+
+Required OS packages for RHEL 8:
+# dnf install epel-repo
+# dnf install wine-core unzip xorg-x11-server-Xvfb
+
+Required OS packages for RHEL 7:
+# yum install epel-repo
+# yum install wine-core unzip xorg-x11-server-Xvfb

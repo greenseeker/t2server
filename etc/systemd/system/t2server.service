@@ -18,8 +18,6 @@ RestartSec=15s
 TimeoutStopSec=60s
 WorkingDirectory=/opt/t2server/GameData
 LogsDirectory=t2server
-
-# Below settings help lock down the service for security
 ProtectSystem=full
 ProtectHome=true
 SystemCallFilter=@system-service
