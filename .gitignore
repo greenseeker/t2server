@@ -1,0 +1,4 @@
+addons/
+winbin/install_wrapper.exe
+winbin/msvcrt-ruby191.dll
+t2support.py
