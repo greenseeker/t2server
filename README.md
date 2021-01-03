@@ -2,13 +2,10 @@
 Scripts to install and run a Tribes 2 server on Linux with Wine.
 
 ## about
-t2server automates the installation of Tribes 2 and the TribesNEXT patch to run under wine on Linux.
-After installation, it provides systemd service units and Python scripts for the purpose of managing
-your server.
+t2server automates the installation of Tribes 2 and the TribesNEXT patch to run under wine on Linux. After installation, it provides systemd service units and Python scripts for the purpose of managing your server.
 
 ## prerequisites
-t2server has a handful of dependencies which are not automatically handled at this time. Before you
-run the setup script, run the following commands depending on your distro:
+t2server has a handful of dependencies which are not automatically handled at this time. Before you run the setup script, run the following commands depending on your distro:
 
 ### Debian 10; Ubuntu 20.04 LTS
 ```

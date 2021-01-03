@@ -116,7 +116,8 @@ if __name__ == "__main__":
     needed_files=[]
     if isfile(f"{pwd}/winbin/tribes2gsi.exe"):
         pinfo("tribes2gsi.exe found.")
-        installer_exe = f"{pwd}/winbin/tribes2gsi.exe"
+        rename(f"{pwd}/winbin/tribes2gsi.exe",f"{pwd}/winbin/tribes2_gsi.exe")
+        installer_exe = f"{pwd}/winbin/tribes2_gsi.exe"
     elif isfile(f"{pwd}/winbin/tribes2_gsi.exe"):
         pinfo("tribes2_gsi.exe found.")
         installer_exe = f"{pwd}/winbin/tribes2_gsi.exe"
