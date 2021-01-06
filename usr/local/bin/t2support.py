@@ -1,7 +1,5 @@
-from tqdm import tqdm
 from re import search
 from requests import get
-from hashlib import md5
 from os import walk
 from os.path import join, islink
 from shutil import chown

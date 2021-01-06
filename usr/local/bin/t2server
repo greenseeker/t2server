@@ -79,20 +79,20 @@ def server_files(config):
             mlist.write("")
     
 
-def runaway_control():
+def runaway_control(runaway_proc_cmd):
     """
-    When run in the background, wine will spawn a 'wineconsole --use-event=52' 
-    process that will consume all available CPU. This function finds that
-    process and uses cpulimit to keep it under control.
+    When run in the background, wine will spawn two 'wineconsole'
+    processes that will consume all available CPU. This function finds these
+    processes and uses cpulimit to keep them under control.
     """
     for x in range(20):
         sleep(15)
-        print("Checking for runaway wineconsole process...")
-        runaway_pid=run(["/usr/bin/pgrep","-f","wineconsole --use-event=52"],stdout=PIPE).stdout
+        print(f"Checking for runaway '{runaway_proc_cmd}' process...")
+        runaway_pid=run(["/usr/bin/pgrep","-f", runaway_proc_cmd],stdout=PIPE).stdout
         if runaway_pid:
             runaway_pid=str(int(runaway_pid))
             print(f"Limiting runaway wineconsole process: {runaway_pid}")
-            run(["/usr/bin/cpulimit","-bp",runaway_pid,"-l2"])
+            run(["/usr/bin/cpulimit","-bp", runaway_pid,"-l2"])
             break
 
 def master_heartbeat():
@@ -178,9 +178,11 @@ if __name__ == "__main__":
         heartbeat.daemon=True
         heartbeat.start()
     
-    # Cap the CPU of the runaway wineconsole process
-    wcpid_limit=Thread(target=runaway_control)
-    wcpid_limit.start()
+    # Cap the CPU of the runaway wineconsole processes
+    wcpid1_limit=Thread(target=runaway_control, args=("wineconsole --use-event=52",))
+    wcpid1_limit.start()
+    wcpid2_limit=Thread(target=runaway_control, args=("wineconsole --use-event=188",))
+    wcpid2_limit.start()
 
     # Open the console log file if running as service and start the Tribes 2 server
     print(f"Starting Tribes 2 server: " + " ".join(server_command))
