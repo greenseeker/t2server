@@ -47,6 +47,15 @@ def setperm(file):
             pwarn(f"Failed to set permissions on {file}")
             log.write(f"... FAILED!\n")
             pass
+    elif file == f"{etc_dir}/release":
+        log.write(f"Setting mode 444 on           {file}")
+        try:
+            chmod(file,0o444)
+            log.write(f"\n")
+        except:
+            pwarn(f"Failed to set permissions on {file}")
+            log.write(f"... FAILED!\n")
+            pass
     else:
         log.write(f"Setting mode 664 on file      {file}")
         try:
@@ -101,3 +110,4 @@ with open(f'{log_dir}/t2fixer.log', 'w') as log:
     setperm(f"{bin_dir}/t2fixer")
     setperm(f"{bin_dir}/t2help")
     setperm(f"{bin_dir}/t2support.py")
+    setperm(f"{etc_dir}/release")
