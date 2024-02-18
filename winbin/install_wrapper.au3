@@ -21,7 +21,7 @@ WriteLog("Wait for Tribes Vengeance Preorder window: " & WinWait("Tribes: Vengea
 WriteLog("Click [Next]: " & ControlClick("Tribes: Vengeance", "Click here to Pre-order Tribes: Vengeance Now!", 5)) ; click "Next >"
 
 ; Welcome 2 
-WriteLog("Wait for Welcome: " & WinWait("Welcome", "Welcome to the Tribes 2 Setup program", 60))
+WriteLog("Wait for Welcome: " & WinWait("Welcome", "Welcome to the Tribes 2 Setup program", 180))
 WriteLog("Click [Next]: " & ControlClick("Welcome", "Welcome to the Tribes 2 Setup program", 3)) ; click "Next >"
 
 ; Credits 
@@ -46,7 +46,7 @@ WriteLog("Wait for Start Installation window: " & WinWait("Start Installation", 
 WriteLog("Click [Next]: " & ControlClick("Start Installation", "You are now ready to install Tribes 2.", 3)) ; click "Next >"
 
 ; Register
-WriteLog("Wait for Register window: " & WinWait("Register", "You can register Tribes 2 on the World Wide Web.", 60))
+WriteLog("Wait for Register window: " & WinWait("Register", "You can register Tribes 2 on the World Wide Web.", 180))
 WriteLog("Uncheck 'Register Tribes 2 Now': " & ControlClick("Register", "You can register Tribes 2 on the World Wide Web.", 9)) ; uncheck "Register Tribes 2 Now"
 WriteLog("Click [Next]: " & ControlClick("Register", "You can register Tribes 2 on the World Wide Web.", 3)) ; click "Next >"
 
