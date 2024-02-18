@@ -1,10 +1,20 @@
 #!/usr/bin/env -S python3 -B
-from t2support import color
+from t2support import color, release_file
+from os.path import isfile
+
+# Get the version from the release file
+if isfile(release_file):
+    with open(release_file, 'r') as rf:
+        version = rf.read().rstrip()
+else:
+    version = None
+
+if version: print(f"{color.DC}t2server {version}")
 
 print(f"\n{color.DC}The follow commands can be used to manage your Tribes 2 server:")
 
 print(f"""\n{color.BW}systemctl <action> t2server{color.DC}: The t2server service can be managed with the 
-standard Linux systemctl command.""")
+standard Linux systemctl command. See 'man systemctl' for more info.""")
 
 print(f"""\n{color.BW}t2fixer{color.DC}: This command resets the owner and permissions on all files associated
 with t2server. It's recommended to run this command any time you make changes
