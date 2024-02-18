@@ -10,32 +10,26 @@ from requests import get
 from threading import Thread
 from t2support import *
 
-winecmd=["/usr/bin/wineconsole", "--backend=curses"]
-argbase=["Tribes2.exe","-dedicated"]
-basecmd=winecmd+argbase
-parent=getppid()
+winecmd = ["/usr/bin/wine"]
+argbase = ["Tribes2.exe","-dedicated"]
+basecmd = winecmd + argbase
+parent = getppid()
 
 def dso_cleanup():
     """
-    This function finds all .dso files (compiled .cs scripts) and deletes them 
-    if they are older than their associated .cs script so that Tribes 2 will 
-    recompile them at startup.
+    This function finds all .dso files (compiled .cs scripts) and deletes them
+    so that Tribes 2 will recompile them at startup.
     """
-    for dso_file in iglob(f"{install_dir}/**/*.dso", recursive=True):
-        cs_file=dso_file[:-4]
-        if isfile(cs_file):
-            cs_mtime=getmtime(cs_file)
-            dso_mtime=getmtime(dso_file)
-            if cs_mtime > dso_mtime:
-                print(f"Deleting {dso_file} so it can be rebuilt.")
-                unlink(dso_file)
+    for dso_file in iglob(f"{install_dir}/**/*.dso", recursive = True):
+        print(f"Deleting {dso_file} so it can be rebuilt.")
+        unlink(dso_file)
 
 def build_args(basecmd,config):
     """
     This function assembles the command line to launch the server based on the 
     config.yaml file.
     """
-    server_command=basecmd
+    server_command = basecmd
     if config['Public']:
         server_command.append("-online")
     else:
@@ -63,12 +57,12 @@ def server_files(config):
             print(f"Deleting {install_dir}/GameData/{config['Mod']}/prefs/ServerPrefs.cs")
             unlink(f"{install_dir}/GameData/{config['Mod']}/prefs/ServerPrefs.cs")
         print(f"Linking {install_dir}/GameData/{config['Mod']}/prefs/ServerPrefs.cs -> {etc_dir}/serverprefs/{config['ServerPrefs']}")
-        makedirs(f"{install_dir}/GameData/{config['Mod']}/prefs", mode=0o755, exist_ok=True)
+        makedirs(f"{install_dir}/GameData/{config['Mod']}/prefs", mode = 0o755, exist_ok = True)
         symlink(f"{etc_dir}/serverprefs/{config['ServerPrefs']}", f"{install_dir}/GameData/{config['Mod']}/prefs/ServerPrefs.cs")
-    
+
     if config["MapList"] and config["MissionType"]:
         print(f"Writing {install_dir}/GameData/base/prefs/missions.txt")
-        makedirs(f"{install_dir}/GameData/base/prefs", mode=0o755, exist_ok=True)
+        makedirs(f"{install_dir}/GameData/base/prefs", mode = 0o755, exist_ok = True)
         with open(f"{install_dir}/GameData/base/prefs/missions.txt", 'w') as mlist:
             for mission in config["MapList"]:
                 mlist.write(f"{config['MissionType']} {mission}\n")
@@ -78,7 +72,6 @@ def server_files(config):
         with open(f"{install_dir}/GameData/base/prefs/missions.txt", 'w') as mlist:
             mlist.write("")
     
-
 def runaway_control(runaway_proc_cmd):
     """
     When run in the background, wine will spawn two 'wineconsole'
@@ -88,9 +81,9 @@ def runaway_control(runaway_proc_cmd):
     for x in range(20):
         sleep(15)
         print(f"Checking for runaway '{runaway_proc_cmd}' process...")
-        runaway_pid=run(["/usr/bin/pgrep","-f", runaway_proc_cmd],stdout=PIPE).stdout
+        runaway_pid = run(["/usr/bin/pgrep","-f", runaway_proc_cmd],stdout = PIPE).stdout
         if runaway_pid:
-            runaway_pid=str(int(runaway_pid))
+            runaway_pid = str(int(runaway_pid))
             print(f"Limiting runaway wineconsole process: {runaway_pid}")
             run(["/usr/bin/cpulimit","-bp", runaway_pid,"-l2"])
             break
@@ -99,7 +92,7 @@ def master_heartbeat():
     """
     A public Tribes 2 server should send a regular heartbeat to the TribexNext
     master server so that it appears in the list, however this seems 
-    inconsistent, so this function takes over that responsibility.
+    inconsistent, so this function takes over that responsibility if enabled.
     """
     print("Starting TribesNext heartbeat thread...")
     while True:
@@ -110,42 +103,23 @@ def is_valid_ip(ip):
     """Check if an ip looks like a valid IP address."""
     return bool(match(r"^(\d{1,3}\.){3}\d{1,3}$", ip))
 
-def override_mitm():
-    """
-    Tribes 2 servers try to detect descrepencies between their own IP and the IP
-    that the client believes it's connecting to as possible man-in-the-middle
-    attacks, however this often interfers with connections when the server is
-    NATed or multi-homed. This function gets the public-facing IP of the host
-    and writes an autoexec script to effectively disable this detection.
-    """
-    for ip_service in ["http://api.ipify.org","http://ifconfig.me","http://ipinfo.io/ip"]:
-        r=get(ip_service)
-        if r.status_code == 200 and is_valid_ip(r.text):
-            print(f"Got public IP address {r.text}")
-            break
-    if r.status_code != 200: bail("Could not get this server's public IP address.")
-    print(f"Overriding Man-in-the-Middle attack detection.")
-    with open(f'{install_dir}/GameData/base/scripts/autoexec/noMITM.cs', 'w') as nomitm_script:
-        nomitm_script.write(f'$IPv4::InetAddress = "{r.text}";\n')
-
 if __name__ == "__main__":
+    # Get the version from the release file and print it.
+    if isfile(release_file):
+        with open(release_file, 'r') as rf:
+            version = rf.read().rstrip()
+    else:
+        version = None
+
+    if version: print(f"t2server version {version}")
+
     # If run interactively, warn user that they probably don't want to do this unless troubleshooting.
     if parent == 1:
         print(f"Started by init")
     else:
-        interactive_run=menu(['[Y]es, run t2server interactively.',"~~[N]o, abort."],header="Running t2server directly can be helpful for troubleshooting but generally it's best to manage your server with 'systemctl'. Do you still want to run t2server?",footer="Choose [N] and run 't2help' if you're unsure of what to do.")
+        interactive_run = menu([f'[Y]es, run t2server interactively.',"~~[N]o, abort."], header = "Running t2server directly can be helpful for troubleshooting but generally it's best to manage your server with 'systemctl'. Do you still want to run t2server?", footer = "Choose [N] and run 't2help' if you're unsure of what to do.")
         if interactive_run == 'N': bail()
         chdir(f"{install_dir}/GameData")
-
-    # Set default configuration
-    config_defaults = {
-        'ServerPrefs' : 'Classic_CTF.cs',
-        'Mod'         : 'Classic',
-        'Public'      : False,
-        'OverrideMITM': True,
-        'MissionType' : 'CTF',
-        'MapList'     : False
-    }
 
     # Read configuration from config.yaml
     with open(f'{etc_dir}/config.yaml', 'r') as f:
@@ -161,33 +135,55 @@ if __name__ == "__main__":
     if not isfile(f"{etc_dir}/serverprefs/{config['ServerPrefs']}"):
         bail(f"Invalid ServerPrefs file: {config['ServerPrefs']}")
 
-    # Delete any pre-existing noMITM script/dso. It will be recreated below, if needed.
-    if isfile(f"{install_dir}/GameData/base/scripts/autoexec/noMITM.cs"): unlink(f"{install_dir}/GameData/base/scripts/autoexec/noMITM.cs")
-    if isfile(f"{install_dir}/GameData/base/scripts/autoexec/noMITM.cs.dso"): unlink(f"{install_dir}/GameData/base/scripts/autoexec/noMITM.cs.dso")
+    # Delete any pre-existing 00_t2server_opts script. It will be recreated below, if needed.
+    if isfile(f"{install_dir}/GameData/base/scripts/autoexec/00_t2server_opts.cs"): unlink(f"{install_dir}/GameData/base/scripts/autoexec/00_t2server_opts.cs")
     
-    # Create serverprefs symlink and missions.txt (if appropriate), clean out stale dso files, then assemble the command line arguments to launch the server
+    # Create serverprefs symlink and missions.txt (if appropriate), clean out dso files, then assemble the command line arguments to launch the server
     server_files(config)
-    dso_cleanup()
-    server_command=build_args(basecmd,config)
+    if config['DSOCleanup']: dso_cleanup()
+    server_command = build_args(basecmd,config)
 
-    # If this is a public server, start a hearbeat thread. Also write the MITM override file if configured.
+    # Start the opts script with a comment at the top indicating this is auto-generated and shouldn't be edited, and also disable PureServer.
+    opts_script_content = "// This file is updated automatically by t2server based on /etc/t2server/config.yaml.\n// Do not edit this file directly.\n$Host::PureServer = 0;\n"
+
+    # If this is a public server... 
     if config['Public']:
-        print("Starting heartbeat...")
-        if config['OverrideMITM']: override_mitm()
-        heartbeat=Thread(target=master_heartbeat)
-        heartbeat.daemon=True
-        heartbeat.start()
+        # Start a heartbeat thread, if configured.
+        if config['Heartbeat']:
+            heartbeat = Thread(target = master_heartbeat)
+            heartbeat.daemon = True
+            heartbeat.start()
+        # Capture the public IP for MITM override, if configured.
+        if config['OverrideMITM']: 
+            for ip_service in ["http://api.ipify.org","http://ifconfig.me","http://ipinfo.io/ip"]:
+                r = get(ip_service)
+                if r.status_code == 200 and is_valid_ip(r.text):
+                    print(f"Got public IP address {r.text}")
+                    break
+            if r.status_code != 200: bail("Could not get this server's public IP address.")
+            opts_script_content += f'$IPv4::InetAddress = "{r.text}";\n'
+            print(f"Overriding Man-in-the-Middle attack detection.")
+
+    # If MissionType and MapList are defined, write the first map into 00_t2server_opts.cs
+    if config['MissionType'] and config['MapList']:
+        opts_script_content += f'$Host::MissionType = "' + config['MissionType'] + '";\n$Host::Map = "' + config['MapList'][0] + '";\n'
+    if config['MissionType'] and config['MissionType'].lower() != 'teamrabbit':
+        opts_script_content += "$Host::LoadTR2Gametype = 0;\n"
+
+    # Write all options to the 00_t2server_opts file
+    with open(f'{install_dir}/GameData/base/scripts/autoexec/00_t2server_opts.cs', 'w') as opts_script:
+        opts_script.write(opts_script_content)
     
     # Cap the CPU of the runaway wineconsole processes
-    wcpid1_limit=Thread(target=runaway_control, args=("wineconsole --use-event=52",))
+    wcpid1_limit = Thread(target = runaway_control, args = ("wineconsole --use-event=52",))
     wcpid1_limit.start()
-    wcpid2_limit=Thread(target=runaway_control, args=("wineconsole --use-event=188",))
+    wcpid2_limit = Thread(target = runaway_control, args = ("wineconsole --use-event=188",))
     wcpid2_limit.start()
 
     # Open the console log file if running as service and start the Tribes 2 server
     print(f"Starting Tribes 2 server: " + " ".join(server_command))
     if parent == 1:
         with open(f"{log_dir}/console.log", 'w') as consolelog:
-            run(server_command,stdout=consolelog)
+            run(server_command,stdout = consolelog)
     else:
-        run(server_command)        
+        run(server_command)
