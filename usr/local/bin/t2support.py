@@ -14,6 +14,18 @@ etc_dir = "/etc/t2server"
 log_dir = "/var/log/t2server"
 unit_dir = "/etc/systemd/system"
 bin_dir = "/usr/local/bin"
+release_file = f"{etc_dir}/release"
+
+config_defaults = {
+    'ServerPrefs' : 'Classic_CTF.cs',
+    'Mod'         : 'Classic',
+    'Public'      : False,
+    'OverrideMITM': False,
+    'Heartbeat'   : False,
+    'DSOCleanup'  : True,
+    'MissionType' : 'CTF',
+    'MapList'     : False
+}
 
 class color:
     X = '\033[m'        # Reset
@@ -78,7 +90,7 @@ def menu(option_list,header="",footer=""):
         try:
             key=search(r'\[([0-9a-zA-Z])\]', option).group(1)
         except AttributeError:
-            pass
+            bail("Error while processing menu option list.")
         if option.startswith("~~"): 
             default = str(key)
             keys.append(key.upper())
