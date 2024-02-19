@@ -11,7 +11,8 @@ t2server has a handful of dependencies which are not automatically handled at th
 ```
 $ sudo dpkg --add-architecture i386
 $ sudo apt update
-$ sudo apt install unzip xvfb python3-minimal python3-pip wine32 cpulimit
+$ sudo apt upgrade
+$ sudo apt install unzip xvfb python3-minimal python3-pip wine32 cpulimit less
 $ sudo pip3 install tqdm requests pyyaml
 ```
 (more to be tested and added)
@@ -47,6 +48,6 @@ RHEL/CentOS 7 and 8 no longer include wine32 in their repos, so installing on th
 
 t2server depends on systemd, so it definitely won't work on any distro that's not using it.
 
-When wine is run in the background, it spawns 2 `wineconsole --use-event=*n*` processes that will consume all available CPU. I have been unable to find a proper solution to this, so for now t2server will run cpulimit against these processes at startup in order to contain them. I have not seen this result in any performance issues.
+When wine is run in the background, it spawns 2 "wineconsole --use-event=*nn*" processes that will consume all available CPU. I have been unable to find a proper solution to this, so for now t2server will run cpulimit against these processes at startup in order to contain them. I have not seen this result in any performance issues.
 
 console.log includes ANSI escape sequences to set colors and terminal size, so your shell will get a little funky after tailing this log. Just run `reset` to reinitialize your session and you'll be back to normal.
